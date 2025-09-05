@@ -425,3 +425,47 @@ bool Map::check_line(int x1, int y1, int x2, int y2)
     }
     return true;
 }
+
+void Map::clear() {
+    grid.clear();
+    nodes.clear();
+    valid_moves.clear();
+    height = width = size = 0;
+    map_is_roadmap = false;
+}
+
+bool Map::initRoadmap(const std::vector<std::pair<double,double>>& coords,
+                             const std::vector<std::vector<int>>& adjacency)
+{
+    if (adjacency.size() != coords.size())
+        return false;
+
+    clear();
+    map_is_roadmap = true;
+
+    const int N = static_cast<int>(coords.size());
+    nodes.reserve(N);
+    for (int i=0;i<N;++i) {
+        gNode n; n.i = coords[i].first; n.j = coords[i].second;
+        n.neighbors = adjacency[i];
+        nodes.push_back(std::move(n));
+    }
+
+    valid_moves.clear();
+    valid_moves.reserve(N);
+    for (int u=0; u<N; ++u) {
+        std::vector<Node> nbrs;
+        nbrs.reserve(nodes[u].neighbors.size());
+        for (int v : nodes[u].neighbors) {
+            Node nv;
+            nv.i  = nodes[v].i;
+            nv.j  = nodes[v].j;
+            nv.id = v;
+            nbrs.push_back(nv);
+        }
+        valid_moves.push_back(std::move(nbrs));
+    }
+
+    size = N;
+    return true;
+}

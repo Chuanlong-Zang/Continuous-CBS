@@ -30,6 +30,11 @@ public:
             std::cout<<"<agent start_i=\""<<agent.start_i<<"\" start_j=\""<<agent.start_j<<"\" goal_i=\""<<agent.goal_i<<"\" goal_j=\""<<agent.goal_j<<"\"/>\n";
     }
     Task();
+
+    void clear(); // reset agents
+
+    // initialize from (start_id, goal_id) pairs (no file I/O)
+    bool init_from_pairs(const Map& map, const std::vector<std::pair<int,int>>& start_goal_ids);
 };
 
 #endif // TASK_H

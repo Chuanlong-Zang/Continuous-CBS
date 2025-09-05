@@ -39,6 +39,15 @@ public:
     std::vector<Node> get_valid_moves(int id) const;
     void print_map();
     void printPPM();
+
+    // reset all cached data (safe to call anytime)
+    void clear();
+
+    // initialize roadmap directly (no file I/O)
+    // xs[k], ys[k] = coordinates of node k
+    // adj[u] = list of v for directed edges u->v
+    bool initRoadmap(const std::vector<std::pair<double,double>>& coords,
+                      const std::vector<std::vector<int>>& adjacency);
 };
 
 #endif // MAP_H

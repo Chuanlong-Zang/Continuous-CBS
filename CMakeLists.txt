@@ -1,59 +1,34 @@
-cmake_minimum_required( VERSION 2.8 )
+# extern/classical/CCBS/CMakeLists.txt
+cmake_minimum_required(VERSION 3.16)
+project(ccbs LANGUAGES CXX)
 
-project( CCBS )
+option(CCBS_BUILD_DRIVER "Build the CCBS CLI driver" ON)
 
-set(Boost_USE_STATIC_LIBS OFF) 
-find_package(Boost COMPONENTS multi_index)
-include_directories( ${Boost_INCLUDE_DIRS} )
-include_directories( "." )
+# Collect sources (core = everything except main.cpp)
+file(GLOB CCBS_CORE_SRC CONFIGURE_DEPENDS
+		*.cpp
+		src/*.cpp
+		simplex/*.cpp
+)
+list(REMOVE_ITEM CCBS_CORE_SRC
+		${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+)
 
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O2 -Wall -Wextra" )
-set( CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++" )
+add_library(ccbs_core STATIC ${CCBS_CORE_SRC})
+add_library(ccbs::core ALIAS ccbs_core)
 
-set( SOURCE_FILES 
-     main.cpp  
-	 config.cpp
-     tinyxml2.cpp
-     xml_logger.cpp 
-     map.cpp 
-     heuristic.cpp 
-     sipp.cpp 
-     task.cpp
-     cbs.cpp 
-	 simplex/columnset.cpp
-	 simplex/constraint.cpp
-	 simplex/matrix.cpp
-	 simplex/objectivefunction.cpp
-	 simplex/simplex.cpp
-	 simplex/variable.cpp)
+target_include_directories(ccbs_core
+		PUBLIC
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+		$<INSTALL_INTERFACE:include>
+)
+target_compile_features(ccbs_core PUBLIC cxx_std_17)
 
-set( HEADER_FILES 
-     const.h  
-     tinyxml2.h
-	 config.h
-     xml_logger.h 
-     map.h 
-     heuristic.h 
-     sipp.h 
-     task.h
-     cbs.h
-	 structs.h
-	 simplex/columnset.h
-	 simplex/constraint.h
-	 simplex/datamismatchexception.h
-	 simplex/divisionbyzeroexception.h
-	 simplex/indexoutofboundexception.h
-	 simplex/matrix.h
-	 simplex/matrixissingularexception.h
-	 simplex/matrixnotsquareexception.h
-     simplex/memoryreachedoutexception.h
-     simplex/notavectorexception.h
-     simplex/objectivefunction.h
-     simplex/pilal.h
-     simplex/pilalexceptions.h
-	 simplex/simplex.h
-	 simplex/simplexexceptions.h
-	 simplex/sizemismatchexception.h
-	 simplex/variable.h)
+find_package(Boost REQUIRED)
+target_link_libraries(ccbs_core PUBLIC Boost::boost)
 
-add_executable( CCBS ${SOURCE_FILES} ${HEADER_FILES} )
+if (CCBS_BUILD_DRIVER)
+	add_executable(ccbs main.cpp)
+	target_link_libraries(ccbs PRIVATE ccbs_core)
+	target_compile_features(ccbs PRIVATE cxx_std_17)
+endif()

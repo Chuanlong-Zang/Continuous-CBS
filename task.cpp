@@ -71,3 +71,25 @@ Agent Task::get_agent(int id) const
     else
         return Agent();
 }
+
+void Task::clear() { agents.clear(); }
+
+bool Task::init_from_pairs(const Map& map, const std::vector<std::pair<int,int>>& start_goal_ids)
+{
+    agents.clear();
+    agents.reserve(start_goal_ids.size());
+    for (size_t i = 0; i < start_goal_ids.size(); ++i) {
+        Agent a;
+        a.id       = static_cast<int>(i);
+        a.start_id = start_goal_ids[i].first;
+        a.goal_id  = start_goal_ids[i].second;
+
+        a.start_i = map.get_i(a.start_id);
+        a.start_j = map.get_j(a.start_id);
+        a.goal_i  = map.get_i(a.goal_id);
+        a.goal_j  = map.get_j(a.goal_id);
+
+        agents.push_back(a);
+    }
+    return true;
+}
